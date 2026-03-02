@@ -44,7 +44,7 @@ By comparing how different agents define and apply severity, MOSAIC provides ins
 
 ## 🔬 Research Questions
 
-> ⚠️ *Research questions are tentative and not yet finalised with supervisor.*
+> ⚠️ *Research questions are tentative*
 
 | # | Research Question |
 |---|---|
@@ -70,8 +70,6 @@ Multiple LLMs independently define what "severity" means for a given condition b
 |---|---|
 | 🔍 Independent Research | Each LLM searches literature and proposes a severity framework |
 | ⚔️ Cross-Critique | LLMs review and critique each other's definitions |
-| ✏️ Revision | Each LLM revises based on critiques received |
-| 📄 Article Comparison | Frameworks compared against published phenotyping papers |
 | 🧊 Consolidation | A consolidator LLM produces the final frozen framework |
 
 ### Phase 2 — 🏥 Patient Classification 🔄
@@ -128,40 +126,7 @@ MOSAIC/
 ├── 📁 data/                              ← Data documentation (no raw data)
 │   └── 📄 README.md                      ← Dataset descriptions & access info
 │
-├── 📁 phase1_severity_definition/        ← Phase 1: LLM severity frameworks
-│   ├── 📄 README.md                      ← Detailed phase 1 documentation
-│   ├── 📁 v1_serper/                     ← Version 1 (Serper API, direct calls)
-│   ├── 📁 v2_tavily/                     ← Version 2 (Tavily API, direct calls)
-│   └── 📁 v3_crewai_tavily/             ← Version 3 (CrewAI + Tavily)
-│
-├── 📁 phase2_patient_classification/     ← Phase 2: Patient-level classification
-│   ├── 📄 README.md                      ← Detailed phase 2 documentation
-│   ├── 📁 extraction/                    ← EHR data extraction & compression
-│   ├── 📁 classification/               ← Assessor classification scripts
-│   └── 📁 consolidation/                ← Consolidation logic
-│
-├── 📁 phase3_evaluation/                 ← Phase 3: Evaluation against ground truth
-│   ├── 📄 README.md                      ← Detailed phase 3 documentation
-│   └── 📁 metrics/                       ← Evaluation scripts & results
-│
-├── 📁 ground_truth/                      ← Sealed ground truth (documentation only)
-│   └── 📄 README.md                      ← Ground truth methodology & audit log
-│
-├── 📁 workstream_a/                      ← Data understanding & descriptive analysis
-│   ├── 📄 README.md                      ← Detailed workstream A documentation
-│   ├── 📁 prevalence/                    ← Disease prevalence calculations
-│   ├── 📁 omop_enrichment/              ← OMOP concept enrichment scripts
-│   ├── 📁 unique_descriptions/           ← Description extraction scripts
-│   ├── 📁 phase1_discovery/              ← Keyword-based discovery
-│   └── 📁 phase2_final_analysis/         ← Coverage & cohort analysis
-│
-├── 📁 outputs/                           ← Pipeline output samples & examples
-│   ├── 📁 phase1/
-│   ├── 📁 phase2/
-│   └── 📁 phase3/
-│
-├── 📄 requirements.txt                   ← Python dependencies
-└── 📄 LICENSE
+├── 📁 Workstream_B/                 
 ```
 
 > 📝 *Raw data is NOT included in this repository. See `data/README.md` for dataset descriptions and access information.*
@@ -221,7 +186,6 @@ To avoid circular reasoning, the ground truth was **sealed before any pipeline r
 | Phase 1: Severity Definition (3 versions) | ✅ Complete |
 | Phase 2: Patient Classification | 🔄 In Progress (CrewAI migration) |
 | Phase 3: Evaluation | ⏭️ Not Started |
-| Research Questions Finalised | ⏳ Pending supervisor agreement |
 
 ---
 
@@ -237,8 +201,6 @@ To avoid circular reasoning, the ground truth was **sealed before any pipeline r
 ---
 
 ## 📄 License
-
-*To be determined.*
 
 ---
 
