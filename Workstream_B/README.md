@@ -728,15 +728,6 @@ AGREEMENT: Partial
 | 🏥 **Healthcare utilization inflated** | 91% have ≥1 ED visit — non-discriminating | Excluded from ground truth |
 | 💊 **Insulin prevalence high** | ~61% vs ~30% real-world | Noted as limitation; still used as severity marker |
 
-### Pipeline Limitations
-
-| Limitation | Details |
-|---|---|
-| 🔴 Context window overflow | 6/20 patients too large even with emergency compression |
-| 🟡 Non-deterministic outputs | LLM responses vary between runs — classifications may differ slightly |
-| 🟡 `===FINAL===` parsing failures | Some patients may not produce the expected structured block |
-| 🟡 Rate limit sensitivity | Long runs risk hitting API rate limits despite cooldowns |
-
 ---
 
 ## 💰 Cost Estimates
