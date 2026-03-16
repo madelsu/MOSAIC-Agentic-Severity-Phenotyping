@@ -1,14 +1,11 @@
 # MOSAIC — Pharmacoepidemiology Study Design
 
 > **MOSAIC** (Multi-LLM Orchestrated Severity Assessment In Clinical Records)  
-> MSc Bioinformatics · University of Copenhagen · 2026  
-> Principal Investigator: Manu | Supervisors: Maurizio Sessa (clinical), Thomas Hamelryck (internal)
-
 ---
 
 ## Overview
 
-MOSAIC is a multi-agent LLM pipeline that classifies patient disease severity from electronic health records (EHR). The pharmacoepidemiology study described here serves as the **validation framework** for MOSAIC: we assess whether LLM-assigned severity phenotypes meaningfully predict five-year mortality, using Cox proportional hazards regression as the primary analytical tool — mirroring the methodology of Cooper et al. (2025, JBI 166:104831).
+MOSAIC is a multi-agent LLM pipeline that classifies patient disease severity from electronic health records (EHR). The pharmacoepidemiology study described here serves as the **validation framework** for MOSAIC: we assess whether LLM-assigned severity phenotypes meaningfully predict five-year mortality, using Cox proportional hazards regression as the primary analytical tool — mirroring the methodology of Cooper et al. (2025).
 
 The study is designed around **Type 2 Diabetes Mellitus (T2D)** as the index condition, using the Synthea Coherent dataset (N=3,539 total patients; N=242 fully eligible T2D patients after strict eligibility criteria). The design is intentionally **generalizable**: the same pipeline will subsequently be applied to Hypertension, Ischaemic Heart Disease, Heart Failure, and Chronic Kidney Disease.
 
@@ -179,4 +176,5 @@ Each disease will use its own condition-specific SNOMED codes, treatment definit
 ---
 
 ## Reference
-Cooper, J. et al. (2025). Defining and validating severity phenotypes for long-term conditions to support risk stratification in primary care: A cross-sectional study. *Journal of Biomedical Informatics*, 166, 104831. https://doi.org/10.1016/j.jbi.2025.104831
+Cooper, J., Jackson, T., Haroon, S., Crowe, F. L., Hathaway, E., Fitzsimmons, L., & Nirantharakumar, K. (2025). Defining phenotypes of disease severity for long-term cardiovascular, renal, metabolic, and mental health conditions in primary care electronic health records: A mixed-methods study using the nominal group technique. Journal of Biomedical Informatics, 166, 104831. https://doi.org/10.1016/J.JBI.2025.104831
+
