@@ -197,6 +197,8 @@ To avoid circular reasoning, the ground truth was **sealed before any pipeline r
 |---|---|---|
 | 🎓 **Thesis Student** | Manuela Del Castillo | MSc Bioinformatics, University of Copenhagen |
 | 🧠 **Supervisor** | Maurizio Sessa, MPharm, PhD, Associate Professor | Drug Safety Group, Department of Drug Design and Pharmacology, University of Copenhagen |
+| 🧠 **Supervisor** | Maurizio Sessa, PhD, Professor in Machine Learning | Department of Computer Science &
+Department of Biology, University of Copenhagen |
 
 ---
 
