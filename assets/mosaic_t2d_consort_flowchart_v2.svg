@@ -1,0 +1,149 @@
+<svg width="680" viewBox="0 0 680 1160" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#1a3f54" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<rect width="680" height="1160" fill="#ffffff"/>
+
+<!-- TITLE -->
+<text font-size="14" font-weight="500" fill="#1a3f54" x="340" y="28" text-anchor="middle">MOSAIC — T2D cohort selection</text>
+<text font-size="12" fill="#8da5b0" x="340" y="46" text-anchor="middle">Synthea Coherent dataset · strict 5-year lookback + follow-up eligibility</text>
+
+<!-- BOX 1 -->
+<rect x="190" y="62" width="300" height="56" rx="8" fill="#e1f5ee" stroke="#0f6e56" stroke-width="0.5"/>
+<text font-size="13" font-weight="500" fill="#085041" x="340" y="84" text-anchor="middle" dominant-baseline="central">Synthea Coherent dataset</text>
+<text font-size="11" fill="#0f6e56" x="340" y="103" text-anchor="middle" dominant-baseline="central">Total patients: 3,539</text>
+
+<line x1="340" y1="118" x2="340" y2="142" stroke="#1a3f54" stroke-width="1" marker-end="url(#arrow)"/>
+
+<!-- BOX 2: T2D identification -->
+<rect x="150" y="142" width="380" height="132" rx="8" fill="#e1f5ee" stroke="#0f6e56" stroke-width="0.5"/>
+<text font-size="13" font-weight="500" fill="#085041" x="340" y="162" text-anchor="middle" dominant-baseline="central">T2D identification · conditions.csv</text>
+<text font-size="11" fill="#0f6e56" x="168" y="182" dominant-baseline="central">44054006 · Diabetes (primary T2D code)</text>
+<text font-size="11" fill="#0f6e56" x="168" y="198" dominant-baseline="central">368581000119106 · Neuropathy due to type 2 DM</text>
+<text font-size="11" fill="#0f6e56" x="168" y="214" dominant-baseline="central">1551000119108 · Nonproliferative diabetic retinopathy</text>
+<text font-size="11" fill="#0f6e56" x="168" y="230" dominant-baseline="central">97331000119101 · Macular edema and retinopathy</text>
+<text font-size="11" fill="#0f6e56" x="168" y="246" dominant-baseline="central">90781000119102 · Microalbuminuria · 157141000119108 · Proteinuria</text>
+<text font-size="11" fill="#0f6e56" x="168" y="262" dominant-baseline="central">60951000119105 · Blindness due to type 2 DM</text>
+
+<!-- Exclusion 1 -->
+<rect x="548" y="168" width="122" height="44" rx="6" fill="#ffffff" stroke="#d4dfe6" stroke-width="0.5" stroke-dasharray="4 3"/>
+<text font-size="11" fill="#8da5b0" x="609" y="186" text-anchor="middle" dominant-baseline="central">No T2D code</text>
+<text font-size="11" fill="#8da5b0" x="609" y="202" text-anchor="middle" dominant-baseline="central">n = 3,157</text>
+<line x1="530" y1="186" x2="548" y2="186" stroke="#d4dfe6" stroke-width="0.8" stroke-dasharray="3 2" marker-end="url(#arrow)"/>
+
+<line x1="340" y1="274" x2="340" y2="298" stroke="#1a3f54" stroke-width="1" marker-end="url(#arrow)"/>
+<text font-size="11" fill="#8da5b0" x="358" y="290" dominant-baseline="central">382 T2D patients</text>
+
+<!-- BOX 3: Code verification -->
+<rect x="150" y="298" width="380" height="68" rx="8" fill="#e1f5ee" stroke="#0f6e56" stroke-width="0.5"/>
+<text font-size="13" font-weight="500" fill="#085041" x="340" y="318" text-anchor="middle" dominant-baseline="central">T2D code verification</text>
+<text font-size="11" fill="#0f6e56" x="340" y="336" text-anchor="middle" dominant-baseline="central">Unique descriptions catalog audit · no T1D or gestational DM found</text>
+<text font-size="11" fill="#0f6e56" x="340" y="352" text-anchor="middle" dominant-baseline="central">Earliest date across all 7 codes = T2D_FIRST_DX_DATE</text>
+
+<!-- Exclusion 2 -->
+<rect x="548" y="312" width="122" height="44" rx="6" fill="#ffffff" stroke="#d4dfe6" stroke-width="0.5" stroke-dasharray="4 3"/>
+<text font-size="11" fill="#8da5b0" x="609" y="330" text-anchor="middle" dominant-baseline="central">DM from cystic</text>
+<text font-size="11" fill="#8da5b0" x="609" y="346" text-anchor="middle" dominant-baseline="central">fibrosis · n = 1</text>
+<line x1="530" y1="334" x2="548" y2="334" stroke="#d4dfe6" stroke-width="0.8" stroke-dasharray="3 2" marker-end="url(#arrow)"/>
+
+<line x1="340" y1="366" x2="340" y2="390" stroke="#1a3f54" stroke-width="1" marker-end="url(#arrow)"/>
+<text font-size="11" fill="#8da5b0" x="358" y="382" dominant-baseline="central">381 T2D patients</text>
+
+<!-- BOX 4: First treatment -->
+<rect x="150" y="390" width="380" height="114" rx="8" fill="#e1f5ee" stroke="#0f6e56" stroke-width="0.5"/>
+<text font-size="13" font-weight="500" fill="#085041" x="340" y="410" text-anchor="middle" dominant-baseline="central">First treatment identification · medications.csv</text>
+<text font-size="11" fill="#0f6e56" x="168" y="430" dominant-baseline="central">RxNorm 860975 · Metformin XR 500 MG (biguanide)</text>
+<text font-size="11" fill="#0f6e56" x="168" y="446" dominant-baseline="central">RxNorm 865098 · Insulin Lispro 100 UNT/ML [Humalog]</text>
+<text font-size="11" fill="#0f6e56" x="168" y="462" dominant-baseline="central">RxNorm 106892 · Insulin Isophane 70/30 [Humulin]</text>
+<text font-size="11" fill="#0f6e56" x="168" y="478" dominant-baseline="central">RxNorm 897122 · Liraglutide 6 MG/ML [GLP-1]</text>
+<text font-size="11" fill="#0f6e56" x="168" y="494" dominant-baseline="central">RxNorm 1373463 · Canagliflozin 100 MG [SGLT2i]</text>
+
+<line x1="340" y1="504" x2="340" y2="528" stroke="#1a3f54" stroke-width="1" marker-end="url(#arrow)"/>
+
+<!-- BOX 5: Observation + mortality -->
+<rect x="150" y="528" width="380" height="80" rx="8" fill="#e1f5ee" stroke="#0f6e56" stroke-width="0.5"/>
+<text font-size="13" font-weight="500" fill="#085041" x="340" y="548" text-anchor="middle" dominant-baseline="central">Observation periods + mortality</text>
+<text font-size="11" fill="#0f6e56" x="340" y="566" text-anchor="middle" dominant-baseline="central">OBS_START/END: min/max date across 11 clinical CSV files</text>
+<text font-size="11" fill="#0f6e56" x="340" y="582" text-anchor="middle" dominant-baseline="central">Death: encounters SNOMED 308646001 · obs LOINC 69453-9</text>
+<text font-size="11" fill="#0f6e56" x="340" y="598" text-anchor="middle" dominant-baseline="central">patients.csv DEATHDATE (fallback)</text>
+
+<line x1="340" y1="608" x2="340" y2="632" stroke="#1a3f54" stroke-width="1" marker-end="url(#arrow)"/>
+
+<!-- BOX 6: Eligibility -->
+<rect x="150" y="632" width="380" height="68" rx="8" fill="#faeeda" stroke="#854f0b" stroke-width="0.5"/>
+<text font-size="13" font-weight="500" fill="#633806" x="340" y="652" text-anchor="middle" dominant-baseline="central">Strict eligibility · all 4 index dates</text>
+<text font-size="11" fill="#854f0b" x="340" y="670" text-anchor="middle" dominant-baseline="central">Lookback ≥ 5 years before index date</text>
+<text font-size="11" fill="#854f0b" x="340" y="686" text-anchor="middle" dominant-baseline="central">Follow-up ≥ 5 years after index date (survival analyses)</text>
+
+<!-- Exclusion 3 -->
+<rect x="548" y="646" width="122" height="44" rx="6" fill="#ffffff" stroke="#d4dfe6" stroke-width="0.5" stroke-dasharray="4 3"/>
+<text font-size="11" fill="#8da5b0" x="609" y="664" text-anchor="middle" dominant-baseline="central">Insufficient data</text>
+<text font-size="11" fill="#8da5b0" x="609" y="680" text-anchor="middle" dominant-baseline="central">window · n = 139</text>
+<line x1="530" y1="666" x2="548" y2="666" stroke="#d4dfe6" stroke-width="0.8" stroke-dasharray="3 2" marker-end="url(#arrow)"/>
+
+<line x1="340" y1="700" x2="340" y2="724" stroke="#1a3f54" stroke-width="1" marker-end="url(#arrow)"/>
+<text font-size="11" fill="#8da5b0" x="358" y="716" dominant-baseline="central">242 eligible patients</text>
+
+<!-- BOX 7: Final cohort -->
+<rect x="130" y="724" width="420" height="116" rx="10" fill="#e1f5ee" stroke="#0f6e56" stroke-width="1"/>
+<text font-size="13" font-weight="500" fill="#085041" x="340" y="746" text-anchor="middle" dominant-baseline="central">Final eligible T2D cohort · N = 242</text>
+<text font-size="11" fill="#0f6e56" x="340" y="766" text-anchor="middle" dominant-baseline="central">63.4% of T2D patients · Male 62.8% · Female 37.2%</text>
+<text font-size="11" fill="#0f6e56" x="340" y="782" text-anchor="middle" dominant-baseline="central">Age at diagnosis: mean 36.4 yrs (range 21.2–53.0)</text>
+<text font-size="11" fill="#0f6e56" x="340" y="798" text-anchor="middle" dominant-baseline="central">Deceased 52.5% · Alive 47.5%</text>
+<text font-size="11" fill="#0f6e56" x="340" y="814" text-anchor="middle" dominant-baseline="central">Obs. duration mean 61.4 yrs · DNA 48.8% · DICOM 12.0%</text>
+<text font-size="11" fill="#0f6e56" x="340" y="830" text-anchor="middle" dominant-baseline="central">First treatment: Metformin 64.5% · Insulin 34.7% · GLP-1 0.8%</text>
+
+<!-- Arrow to analyses -->
+<line x1="340" y1="840" x2="340" y2="868" stroke="#1a3f54" stroke-width="1" marker-end="url(#arrow)"/>
+
+<!-- Horizontal connector -->
+<line x1="80" y1="868" x2="600" y2="868" stroke="#8da5b0" stroke-width="0.8"/>
+<line x1="80"  y1="868" x2="80"  y2="884" stroke="#1a3f54" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="253" y1="868" x2="253" y2="884" stroke="#1a3f54" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="426" y1="868" x2="426" y2="884" stroke="#1a3f54" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="600" y1="868" x2="600" y2="884" stroke="#1a3f54" stroke-width="1" marker-end="url(#arrow)"/>
+
+<!-- Analysis box 1: First Dx -->
+<rect x="20" y="884" width="120" height="68" rx="8" fill="#e1f5ee" stroke="#0f6e56" stroke-width="0.5"/>
+<text font-size="12" font-weight="500" fill="#085041" x="80" y="904" text-anchor="middle" dominant-baseline="central">First Dx</text>
+<text font-size="11" fill="#0f6e56" x="80" y="922" text-anchor="middle" dominant-baseline="central">Cox regression</text>
+<text font-size="11" fill="#0f6e56" x="80" y="938" text-anchor="middle" dominant-baseline="central">5yr follow-up</text>
+
+<!-- Analysis box 2: First Tx -->
+<rect x="193" y="884" width="120" height="68" rx="8" fill="#e1f5ee" stroke="#0f6e56" stroke-width="0.5"/>
+<text font-size="12" font-weight="500" fill="#085041" x="253" y="904" text-anchor="middle" dominant-baseline="central">First Tx</text>
+<text font-size="11" fill="#0f6e56" x="253" y="922" text-anchor="middle" dominant-baseline="central">Cox regression</text>
+<text font-size="11" fill="#0f6e56" x="253" y="938" text-anchor="middle" dominant-baseline="central">5yr follow-up</text>
+
+<!-- Analysis box 3: Random -->
+<rect x="366" y="884" width="120" height="68" rx="8" fill="#e1f5ee" stroke="#0f6e56" stroke-width="0.5"/>
+<text font-size="12" font-weight="500" fill="#085041" x="426" y="904" text-anchor="middle" dominant-baseline="central">Random date</text>
+<text font-size="11" fill="#0f6e56" x="426" y="922" text-anchor="middle" dominant-baseline="central">Cox regression</text>
+<text font-size="11" fill="#0f6e56" x="426" y="938" text-anchor="middle" dominant-baseline="central">5yr follow-up</text>
+
+<!-- Analysis box 4: Latest -->
+<rect x="540" y="884" width="120" height="68" rx="8" fill="#faeeda" stroke="#854f0b" stroke-width="0.5"/>
+<text font-size="12" font-weight="500" fill="#633806" x="600" y="904" text-anchor="middle" dominant-baseline="central">Latest</text>
+<text font-size="11" fill="#854f0b" x="600" y="922" text-anchor="middle" dominant-baseline="central">Cross-sectional</text>
+<text font-size="11" fill="#854f0b" x="600" y="938" text-anchor="middle" dominant-baseline="central">All data</text>
+
+<!-- Severity note box -->
+<rect x="130" y="972" width="420" height="56" rx="8" fill="#ffffff" stroke="#d4dfe6" stroke-width="0.5"/>
+<text font-size="11" fill="#1a3f54" x="340" y="992" text-anchor="middle" dominant-baseline="central">MOSAIC severity classification per index date (lookback window)</text>
+<text font-size="11" fill="#1a3f54" x="340" y="1008" text-anchor="middle" dominant-baseline="central">Binary + four-tier Cox · crude + adjusted HR · age · sex · race/ethnicity</text>
+
+<!-- Dashed lines to severity box -->
+<line x1="80"  y1="952" x2="80"  y2="1000" stroke="#d4dfe6" stroke-width="0.5" stroke-dasharray="3 2"/>
+<line x1="253" y1="952" x2="253" y2="1000" stroke="#d4dfe6" stroke-width="0.5" stroke-dasharray="3 2"/>
+<line x1="426" y1="952" x2="426" y2="1000" stroke="#d4dfe6" stroke-width="0.5" stroke-dasharray="3 2"/>
+<line x1="80"  y1="1000" x2="130" y2="1000" stroke="#d4dfe6" stroke-width="0.5" stroke-dasharray="3 2"/>
+<line x1="426" y1="1000" x2="550" y2="1000" stroke="#d4dfe6" stroke-width="0.5" stroke-dasharray="3 2"/>
+
+<!-- Footer -->
+<text font-size="11" fill="#8da5b0" x="340" y="1050" text-anchor="middle">Cooper et al. (2025, JBI) methodology · designed for extension to Hypertension · IHD · Heart Failure · CKD</text>
+<text font-size="11" fill="#8da5b0" x="340" y="1068" text-anchor="middle">Random date seed = 42 · exact RxNorm strings from Coherent catalog · scripts in /phase1_cohort_construction/</text>
+
+</svg>
