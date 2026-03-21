@@ -1,180 +1,402 @@
-# MOSAIC — Pharmacoepidemiology Study Design
+# MOSAIC — Pharmacoepidemiology Cohort Construction
 
-> **MOSAIC** (Multi-LLM Orchestrated Severity Assessment In Clinical Records)  
----
-
-## Overview
-
-MOSAIC is a multi-agent LLM pipeline that classifies patient disease severity from electronic health records (EHR). The pharmacoepidemiology study described here serves as the **validation framework** for MOSAIC: we assess whether LLM-assigned severity phenotypes meaningfully predict five-year mortality, using Cox proportional hazards regression as the primary analytical tool — mirroring the methodology of Cooper et al. (2025).
-
-The study is designed around **Type 2 Diabetes Mellitus (T2D)** as the index condition, using the Synthea Coherent dataset (N=3,539 total patients; N=242 fully eligible T2D patients after strict eligibility criteria). The design is intentionally **generalizable**: the same pipeline will subsequently be applied to Hypertension, Ischaemic Heart Disease, Heart Failure, and Chronic Kidney Disease.
+> **Notebook**: `mosaic_cohort_construction.ipynb`  
+> **Purpose**: Build a fully eligible patient cohort from the Synthea Coherent dataset, ready for downstream severity classification (MOSAIC pipeline) and survival analysis (Cox regression notebook).  
+> **Disease shown**: Type 2 Diabetes Mellitus (T2D) — designed to be reused for any condition with minimal changes.
 
 ---
 
-## Pharmacoepidemiology: Key Definitions
+## What this notebook does
 
-This section defines all core pharmacoepidemiological concepts used in this study. These definitions are standard in the field and apply consistently across all disease analyses within MOSAIC.
+This notebook takes raw Synthea Coherent CSV files and produces a clean, analysis-ready cohort table. For each eligible patient it computes:
 
-### Study Period
-The **study period** is the total calendar time span of the dataset from which patients can be drawn. For the Coherent dataset, this spans from the earliest recorded clinical event (~1913) to the latest recorded date (~2021). The study period defines the outer boundaries within which all patient observation windows must fall.
+- Their observation period (first and last recorded clinical event)
+- Their disease first diagnosis date
+- Their first treatment date
+- Three survival analysis index dates (first diagnosis, first treatment, random date)
+- One cross-sectional index date (latest)
+- Eligibility flags for each index date
+- Mortality status and cause of death
 
-### Observation Period (Patient-Level)
-The **observation period** is the patient-specific time window during which we have reliable clinical data. It is defined as:
-
-- **Observation Start (`OBS_START`)**: the earliest date of any recorded clinical event across all clinical files (conditions, medications, encounters, observations, procedures, careplans, immunizations, imaging studies, devices, allergies, supplies)
-- **Observation End (`OBS_END`)**: the latest date of any recorded clinical event across the same files
-
-This is computed empirically by scanning all clinical CSV files rather than relying on any single source, to capture the true extent of available data per patient.
-
-### Index Date
-The **index date** is the anchor point in time at which a patient enters a specific analysis. All covariate assessment (exposure: severity) is measured in the window *before* the index date, and all outcome assessment (mortality) is measured in the window *after* it. The choice of index date is a fundamental study design decision that directly affects which information is used to classify severity and what follow-up time is available.
-
-MOSAIC implements **four index date definitions** per patient, enabling comparison across analytical approaches:
-
-| Index Date | Definition | Analysis Type |
-|---|---|---|
-| **First Diagnosis** | Date of first T2D-related condition code in the record | Survival (Cox regression) |
-| **First Treatment** | Date of first antidiabetic medication dispensed | Survival (Cox regression) |
-| **Random Date** | Randomly sampled date between first diagnosis and (OBS_END − 5 years) | Survival (Cox regression) |
-| **Latest** | OBS_END — the most recent date of any clinical record | Cross-sectional (descriptive) |
-
-The **Latest** index date corresponds to the approach used in the original MOSAIC pilot (100-patient analysis), where all available patient information was used without temporal constraints. It serves as a comparator to the three methodologically rigorous survival analyses.
-
-### Covariate Assessment Window (Lookback Period)
-The **covariate assessment window** (also called the lookback period) is the time interval *before* the index date used to assess patient characteristics and the primary exposure (severity). In this study, a minimum of **5 years of lookback** is required for a patient to be eligible for any survival analysis. This ensures that sufficient clinical history is available to meaningfully characterize severity.
-
-For the Latest index date (cross-sectional), the entire observation period serves as the lookback window.
-
-### Follow-up Period
-The **follow-up period** is the time interval *after* the index date during which the outcome (mortality) is observed. This study uses a **five-year follow-up** window, consistent with Cooper et al. (2025). A patient is censored at five years if they have not died by the end of the follow-up window.
-
-For a patient to be eligible for a survival analysis at a given index date, at least **5 years of follow-up** must be available after that index date (i.e., `OBS_END − index date ≥ 5 years`).
-
-### Enrollment Period
-The **enrollment period** is the range of index dates that satisfy both the lookback and follow-up eligibility criteria. It is patient-specific: each patient has a different enrollment window depending on when their index date falls relative to their observation start and end.
-
-### Eligibility Criteria (Strict)
-A patient is **eligible** for a given index date analysis if and only if:
-
-```
-(index_date − OBS_START) ≥ 5 years    [lookback requirement]
-AND
-(OBS_END − index_date) ≥ 5 years      [follow-up requirement]
-```
-
-For the **Latest** index date (cross-sectional only):
-```
-(OBS_END − OBS_START) ≥ 5 years       [minimum observation duration]
-```
-
-### Exposure: Severity Phenotype
-The **exposure** in this study is the MOSAIC-assigned disease severity tier, assessed using clinical information recorded within the covariate assessment window (5 years before the index date). Severity is classified on a four-tier ordinal scale: **Mild / Moderate / Severe / Critical-Complex**, following the framework derived from Cooper et al. (2025).
-
-For the Latest index date, severity is assessed using all available clinical information.
-
-### Outcome: Five-Year Mortality
-The **primary outcome** is all-cause mortality within five years of the index date. Death status is ascertained from three sources in the Coherent dataset (reconciled by priority):
-
-1. `encounters.csv` — Death Certification encounter (SNOMED code 308646001), with cause of death from `REASONDESCRIPTION`
-2. `observations.csv` — Cause of Death [US Standard Certificate of Death] (LOINC code 69453-9)
-3. `patients.csv` — `DEATHDATE` column
-
-### Censoring
-Patients who do not experience the outcome (death) within the five-year follow-up window are **censored** at five years. Time-to-event is defined as:
-- **If died within 5 years**: days from index date to death date
-- **If alive at 5 years**: 5 × 365.25 days (censored)
-
-### Hazard Ratio (HR)
-A **hazard ratio** is the ratio of the hazard rate (instantaneous risk of death at any given time) between two groups. In this study, HRs compare each severity tier to the Mild reference category. An HR > 1 indicates higher mortality risk; HR < 1 indicates lower risk. Both crude (unadjusted) and adjusted HRs are reported.
-
-### Cox Proportional Hazards Regression
-**Cox proportional hazards regression** is a semi-parametric survival analysis model that estimates HRs while accounting for censoring and the time-varying nature of mortality risk. It assumes that the hazard ratio between groups is constant over time (proportional hazards assumption), which will be formally tested.
+The output is a single CSV file per disease that feeds directly into:
+1. The **MOSAIC LLM pipeline** (severity classification per index date)
+2. The **analysis notebook** (Cox proportional hazards regression)
 
 ---
 
-## Study Design
+## How to reuse for a new disease
 
-### Design Type
-Retrospective cohort study using a synthetic EHR dataset (Synthea Coherent). Four parallel analyses using different index date definitions, three of which are survival analyses and one cross-sectional.
+Only **Cell 2** needs to change. Update:
+- `DISEASE_NAME`
+- `CONDITION_SEARCH_KEYWORDS`
+- `TREATMENT_SEARCH_KEYWORDS`
+- `EXCLUDE_KEYWORDS` (if needed)
 
-### Dataset
-**Synthea Coherent Dataset**
-- Total patients: 3,539
-- Data format: CSV (clinical tables) + DNA files + DICOM imaging files + FHIR bundles
-- Geographic scope: Massachusetts, USA
-- Calendar period: ~1913–2021
-- Condition coding: SNOMED-CT
-- Medication coding: RxNorm
-- Observation coding: LOINC
+Run all cells in order. Everything else is fully automatic.
 
-### Index Condition: Type 2 Diabetes Mellitus
-T2D is identified using the following SNOMED-CT condition codes, all recorded in `conditions.csv`. The **earliest recorded date** across all seven descriptions is used as the first T2D diagnosis date:
+---
 
-| Description | SNOMED Code |
+## Cell-by-cell documentation
+
+### Cell 1 — Setup & Library Imports
+
+**What it does:**  
+Installs and imports all Python libraries needed for cohort construction. Defines one global utility function used throughout the notebook.
+
+**Libraries installed:**
+- `openpyxl` — for writing Excel output files
+
+**Libraries imported:**
+- `pandas` — data loading, manipulation, and CSV processing
+- `numpy` — numerical operations
+- `os`, `re`, `warnings` — standard Python utilities
+
+**Global utility defined:**
+
+```python
+def to_naive(series):
+    """Parse to datetime and strip timezone if present."""
+```
+
+This function is used in every subsequent cell that handles dates. It is needed because Synthea mixes timezone-aware and timezone-naive timestamps across different CSV files — without stripping timezone info, date comparisons fail with a `TypeError`. The function parses any column to datetime and calls `.dt.tz_localize(None)` if a timezone is detected.
+
+**When to re-run:** Every time you open the notebook. No changes needed between diseases.
+
+---
+
+### Cell 2 — Paths, Parameters & Disease Configuration
+
+**What it does:**  
+Three things in one cell: mounts Google Drive, auto-detects the study period by scanning all clinical CSV files, and defines all disease-specific configuration.
+
+**Part A — Google Drive mount:**  
+Connects to your Google Drive so all subsequent cells can read and write files.
+
+**Part B — Study period auto-detection:**  
+Scans all 12 clinical CSV files and finds the earliest and latest date recorded anywhere in the dataset:
+
+```
+DATASET_START_DATE → first ever recorded clinical event across all files
+DATASET_END_DATE   → last ever recorded clinical event across all files
+```
+
+This scan covers: `conditions`, `observations`, `medications`, `encounters`, `procedures`, `careplans`, `immunizations`, `imaging_studies`, `devices`, `allergies`, `supplies`, `patients` (including birth and death dates).
+
+Each file's own date range is printed as it is scanned, giving you a clear picture of the data coverage per file. The overall study period is printed at the end.
+
+**Why `DATASET_END_DATE` matters — the follow-up eligibility fix:**  
+A critical design decision. For follow-up eligibility we check:
+
+```
+DATASET_END_DATE - index_date >= 5 years
+```
+
+rather than:
+
+```
+patient OBS_END - index_date >= 5 years   ← WRONG
+```
+
+The reason: for a deceased patient, `OBS_END` equals their death date. Using `OBS_END` would exclude patients who died within 5 years of their index date — the very outcome we are trying to study. This is **survivorship bias**. Using `DATASET_END_DATE` instead asks the correct question: *did the dataset run long enough after this patient's index date to potentially observe a death?*
+
+Time-to-event for the Cox regression (computed in the analysis notebook, not here) is:
+
+```
+duration = min(DEATH_DATE, index_date + 5 years) - index_date
+event    = 1 if died within 5 years, 0 if censored at 5 years
+```
+
+Since `DATASET_END_DATE` is computed automatically from the data, this cell works correctly for any Synthea dataset (Coherent, Cheng, OMOP) without manual adjustment.
+
+**Part C — Disease configuration:**  
+The only block that changes between diseases. Defines:
+
+| Variable | Description |
 |---|---|
-| Diabetes (T2D primary code) | 44054006 |
-| Neuropathy due to type 2 diabetes mellitus | 368581000119106 |
-| Nonproliferative diabetic retinopathy due to type 2 diabetes mellitus | 1551000119108 |
-| Macular edema and retinopathy due to type 2 diabetes mellitus | 97331000119101 |
-| Microalbuminuria due to type 2 diabetes mellitus | 90781000119102 |
-| Proteinuria due to type 2 diabetes mellitus | 157141000119108 |
-| Blindness due to type 2 diabetes mellitus | 60951000119105 |
+| `DISEASE_NAME` | Used in output filenames and print statements |
+| `CONDITION_SEARCH_KEYWORDS` | Keywords to find condition codes in the catalog |
+| `TREATMENT_SEARCH_KEYWORDS` | Keywords to find treatment codes in the catalog |
+| `EXCLUDE_KEYWORDS` | Terms to remove from condition results (e.g. related but distinct conditions) |
+| `LOOKBACK_YEARS` | Minimum years of data required before index date (default: 5) |
+| `FOLLOWUP_YEARS` | Minimum years of dataset coverage required after index date (default: 5) |
+| `RANDOM_SEED` | Seed for reproducible random date assignment (default: 42) |
 
-### First Antidiabetic Treatment
-First treatment date is defined as the earliest dispensing date of any of the following medications (exact description strings confirmed from the Coherent dataset unique descriptions catalog):
+**When to re-run:** Every time you open the notebook, and whenever you change disease. Always re-run Cell 3 after changing any keyword list.
 
-| Drug | Class |
+---
+
+### Cell 3 — Catalog Extractor
+
+**What it does:**  
+Reads the unique descriptions catalog (`unique_descriptions_coherent_dataset.csv`) and automatically builds the exact lists of condition descriptions and treatment descriptions used for patient identification in later cells.
+
+**Why a catalog?**  
+Rather than hardcoding codes manually or using broad keyword matching against millions of rows, we use a pre-built catalog of every unique description string in the dataset. This catalog was generated separately and has one row per unique description, with the source file(s) where it appears. Matching against this catalog first is efficient, transparent, and fully auditable.
+
+**Catalog format:**
+
+```
+Description                                          Source_Files
+Diabetes (code: 44054006)                            conditions
+Encounter for problem (code: 185347001,              encounters
+  REASONDESCRIPTION: Neuropathy due to type 2 DM)
+24 HR Metformin hydrochloride 500 MG (code: 860975,  medications
+  REASONDESCRIPTION: Diabetes)
+```
+
+**Part A — Catalog parsing:**  
+Every catalog entry is parsed into three structured fields:
+
+| Field | Example |
 |---|---|
-| 24 HR Metformin hydrochloride 500 MG Extended Release Oral Tablet | Biguanide |
-| Insulin Lispro 100 UNT/ML Injectable Solution [Humalog] | Insulin |
-| insulin human isophane 70 UNT/ML / Regular Insulin Human 30 UNT/ML Injectable Suspension [Humulin] | Insulin |
-| 3 ML liraglutide 6 MG/ML Pen Injector | GLP-1 agonist |
-| canagliflozin 100 MG Oral Tablet | SGLT2 inhibitor |
+| `CLEAN_DESC` | `Diabetes` |
+| `CODE` | `44054006` |
+| `REASON_DESC` | `Neuropathy due to type 2 diabetes mellitus` |
 
-### Random Date Assignment
-For each patient, a random index date is sampled uniformly from the interval `[T2D_FIRST_DX_DATE, OBS_END − 5 years]` using NumPy's `default_rng` with seed 42, ensuring full reproducibility. Patients for whom this interval is zero or negative are ineligible for the random date analysis.
+This allows searching against both the primary description and the reason description — important because a condition often appears in encounters, procedures, and careplans as a `REASONDESCRIPTION` rather than a primary `DESCRIPTION`.
 
-### Covariates for Adjusted Cox Models
-| Covariate | Source | Notes |
+**Part B — Source file configuration:**  
+Defines how to match descriptions against each source CSV and which columns to use:
+
+| Source file | Date column | Match columns |
 |---|---|---|
-| Age at index date | Derived from `BIRTHDATE` | Continuous, years |
-| Sex | `patients.csv` | Binary (Male/Female) |
-| Race/Ethnicity | `patients.csv` | Categorical |
-| Insurance type at index date | `payer_transitions.csv` + `payers.csv` | Proxy for socioeconomic deprivation (Medicaid/Dual Eligible/Uninsured vs private) — *planned* |
+| `conditions.csv` | START | DESCRIPTION |
+| `medications.csv` | START | DESCRIPTION |
+| `encounters.csv` | START | DESCRIPTION, REASONDESCRIPTION |
+| `observations.csv` | DATE | DESCRIPTION |
+| `procedures.csv` | DATE | DESCRIPTION, REASONDESCRIPTION |
+| `careplans.csv` | START | DESCRIPTION, REASONDESCRIPTION |
 
-> **Note on deprivation**: Cooper et al. (2025) adjust for IMD (Index of Multiple Deprivation), a UK-specific area-level deprivation measure. As the Coherent dataset is US-based synthetic data, we use insurance type as a US-appropriate socioeconomic proxy, following established US pharmacoepidemiology practice. This variable is currently planned and will be incorporated in the adjusted models.
+**Part C — Condition extraction:**  
+Searches `CLEAN_DESC` and `REASON_DESC` against `CONDITION_SEARCH_KEYWORDS` (from Cell 2), then removes any matches containing `EXCLUDE_KEYWORDS`. Results are grouped by source file and printed for review, showing description, code, and reason description for each match.
 
-### Statistical Analysis
-For each of the three survival index dates:
+**Part D — Treatment extraction:**  
+Same process but restricted to medication descriptions only, searching against `TREATMENT_SEARCH_KEYWORDS`.
 
-1. **Binary Cox regression** — Severe/Critical-Complex vs Mild/Moderate
-   - Crude HR (severity alone)
-   - Adjusted HR (severity + age + sex + race/ethnicity)
+**Output variables for downstream cells:**
 
-2. **Four-tier Cox regression** — Mild (reference) vs Moderate, Severe, Critical-Complex
-   - Crude HRs for each tier
-   - Adjusted HRs for each tier
-   - Dose-response assessment: monotonic increase in HR across tiers constitutes strong predictive validity evidence
+| Variable | Content |
+|---|---|
+| `CONDITION_DESCRIPTIONS` | List of exact description strings for `.isin()` matching |
+| `CONDITION_CODE_LIST` | List of SNOMED/other codes |
+| `CONDITION_SOURCE_MAP` | Dict mapping source file → descriptions, codes, and CSV config |
+| `TREATMENT_DESCRIPTIONS` | List of exact medication description strings for `.isin()` matching |
+| `TREATMENT_CODE_LIST` | List of RxNorm/other codes |
 
-3. **Proportional hazards assumption** tested via Schoenfeld residuals
+**Review step:**  
+The cell ends with a checklist that prints counts and warns if nothing was found, prompting you to adjust keywords in Cell 2 before continuing. You should always read the full output of this cell carefully before running Cell 4 — it is the foundation for all patient identification downstream.
 
-4. **Stratified analyses** by age group (<50 / 50–65 / >65), sex, and race/ethnicity
+**When to re-run:** Any time you change keywords in Cell 2.
 
-For the Latest (cross-sectional) index date:
-- Severity distribution summary
-- Comparison of severity distributions across all four index dates
+---
 
-### Planned Extension to Additional Diseases
-The identical pipeline will be applied to:
-- **Hypertension**
-- **Ischaemic Heart Disease (IHD)**
-- **Heart Failure**
-- **Chronic Kidney Disease (CKD)**
+## Output files
 
-Each disease will use its own condition-specific SNOMED codes, treatment definitions, and severity framework (derived from Cooper et al. 2025 green-rated phenotypes). Eligibility criteria (5+5 year strict rule) and Cox regression approach remain identical across all conditions, enabling cross-disease comparison.
+| File | Description |
+|---|---|
+| `{DISEASE}_observation_periods.csv` | All patients with OBS_START, OBS_END, death status |
+| `{DISEASE}_index_date_eligibility.csv` | All disease patients with index dates and eligibility flags |
+| `{DISEASE}_fully_eligible_cohort.csv` | Final eligible cohort — input to MOSAIC pipeline and analysis notebook |
+
+---
+
+## Study design reference
+
+For full pharmacoepidemiology study design documentation including all definitions (index date, lookback window, follow-up period, censoring, hazard ratio) and the SNOMED-CT / RxNorm codes used for T2D, see [`STUDY_DESIGN.md`](../STUDY_DESIGN.md).
 
 ---
 
 ## Reference
-Cooper, J., Jackson, T., Haroon, S., Crowe, F. L., Hathaway, E., Fitzsimmons, L., & Nirantharakumar, K. (2025). Defining phenotypes of disease severity for long-term cardiovascular, renal, metabolic, and mental health conditions in primary care electronic health records: A mixed-methods study using the nominal group technique. Journal of Biomedical Informatics, 166, 104831. https://doi.org/10.1016/J.JBI.2025.104831
 
+Cooper, J. et al. (2025). Defining and validating severity phenotypes for long-term conditions to support risk stratification in primary care. *Journal of Biomedical Informatics*, 166, 104831.
+
+---
+
+### Cell 4 — Observation Periods & Death Reconciliation
+
+**What it does:**
+Scans all clinical CSV files to establish the true observation period for every patient in the dataset, then reconciles death status from three independent sources. This cell operates on **all patients** — no disease filtering yet.
+
+**Part A — Demographics:**
+Loads `patients.csv` and standardises the patient ID column name (handles both `Id` and `ID` variants across Synthea datasets). Parses `BIRTHDATE` and `DEATHDATE`.
+
+**Part B — Observation period computation:**
+Iterates all 11 clinical CSV files and collects every valid date per patient across all date columns:
+
+| File | Date columns scanned |
+|---|---|
+| `conditions.csv` | START, STOP |
+| `observations.csv` | DATE |
+| `medications.csv` | START, STOP |
+| `encounters.csv` | START, STOP |
+| `procedures.csv` | DATE |
+| `careplans.csv` | START, STOP |
+| `immunizations.csv` | DATE |
+| `imaging_studies.csv` | DATE |
+| `devices.csv` | START, STOP |
+| `allergies.csv` | START, STOP |
+| `supplies.csv` | DATE |
+
+For each patient: `OBS_START` = minimum date across all files and columns; `OBS_END` = maximum date. `OBS_DURATION_YEARS` is computed as `(OBS_END - OBS_START).days / 365.25`.
+
+Note: `patients.csv` birth and death dates are intentionally excluded from this scan — `OBS_START` and `OBS_END` reflect clinical activity, not demographic dates.
+
+**Part C — Death reconciliation:**
+Death status is ascertained from three independent sources and merged in priority order:
+
+| Priority | Source | Code | Field used |
+|---|---|---|---|
+| 1 (highest) | `encounters.csv` | SNOMED `308646001` (Death Certification) | `REASONDESCRIPTION` → cause of death |
+| 2 | `observations.csv` | LOINC `69453-9` (Cause of Death US Certificate) | `VALUE` → cause of death |
+| 3 (fallback) | `patients.csv` | `DEATHDATE` column | date only, no cause |
+
+The encounter source is preferred because it is the richest — it contains the cause of death in `REASONDESCRIPTION`. A cross-source overlap summary is printed to flag any discrepancies between sources.
+
+**Final death fields:**
+
+| Field | Description |
+|---|---|
+| `DIED` | Boolean — True if any source records death |
+| `FINAL_DEATH_DATE` | Reconciled death date (enc > obs > patients.csv) |
+| `FINAL_CAUSE_OF_DEATH` | Cause of death text (enc > obs) |
+
+**Output variable:** `all_patients_df` — master patient table with observation periods and death info for all patients in the dataset.
+
+**When to re-run:** Once per session. No changes needed between diseases.
+
+---
+
+### Cell 5 — Disease Patient Identification & First Treatment
+
+**What it does:**
+Identifies which patients have the target disease and finds their first diagnosis date and first treatment date. Uses a deliberate two-step approach to avoid inflating the patient count.
+
+**Why two steps?**
+A naive approach — searching for disease mentions across all files including encounters and procedures — massively inflates the patient count. In the T2D case this caused a jump from 382 to 2,253 patients, because `REASONDESCRIPTION` in encounters captures every visit *related to* a T2D complication, not just T2D diagnoses. The two-step approach separates WHO has the disease from WHEN their earliest evidence was recorded.
+
+**Step 1 — WHO has the disease? (`conditions.csv` only)**
+Patient identification uses `conditions.csv` exclusively. This is the canonical diagnostic source in Synthea. Matching uses both `DESCRIPTION` (via `CONDITION_DESCRIPTIONS`) and `CODE` (via `CONDITION_CODE_LIST`) from Cell 3. Exclusions from `EXCLUDE_KEYWORDS` are applied after matching.
+
+> Example for T2D: matches `DESCRIPTION == "Diabetes"` OR `CODE == "44054006"`, then excludes any row containing `"cystic fibrosis"`.
+
+The result is `confirmed_patients` — a set of patient UUIDs who definitively have the disease.
+
+**Step 2 — WHEN was their first evidence? (all source files)**
+For patients already in `confirmed_patients`, searches across all files in `CONDITION_SOURCE_MAP` for the earliest date of any disease-related record. The critical guard is:
+
+```python
+df = df[df[pat_col].isin(confirmed_patients)]  # filter FIRST
+```
+
+This means encounters and procedures can only contribute earlier dates for already-confirmed patients — they can never add new patients. `FIRST_DX_DATE` = minimum date across all sources. `FIRST_DX_SOURCE` records which file provided the earliest date for auditing.
+
+**First treatment:**
+Loads `medications.csv`, filters to `confirmed_patients`, and matches against `TREATMENT_DESCRIPTIONS` and `TREATMENT_CODE_LIST` from Cell 3. First treatment per patient = earliest dispensing date. Drug name stored in `FIRST_TREATMENT_DRUG`.
+
+**Merge:**
+Uses an `inner` join with `all_patients_df` from Cell 4 — automatically keeps only disease patients and drops the rest of the dataset.
+
+**Output variable:** `disease_patients_df` — disease patients only, with observation periods, death info, first diagnosis date, and first treatment date.
+
+**When to re-run:** Any time Cell 3 is re-run (keywords changed). No other changes needed between diseases.
+
+---
+
+### Cell 6 — Index Date Assignment & Eligibility
+
+**What it does:**
+Computes four index dates per patient and evaluates eligibility for each. This is the cell where the core pharmacoepidemiology study design is operationalised.
+
+**Key design decision — using `DATASET_END_DATE` for follow-up:**
+Follow-up eligibility is checked as:
+
+```
+DATASET_END_DATE - index_date >= FOLLOWUP_YEARS
+```
+
+NOT as `OBS_END - index_date >= FOLLOWUP_YEARS`. See Cell 2 for the full explanation of why this matters (survivorship bias fix). Time-to-event for Cox regression is computed in the analysis notebook as `min(DEATH_DATE, index_date + 5 years) - index_date`.
+
+**Index Date 1 — First Diagnosis:**
+Index date = `FIRST_DX_DATE` from Cell 5. Eligible if:
+- Lookback ≥ 5 years before index date
+- Dataset extends ≥ 5 years after index date
+- Patient is alive on the index date
+
+**Index Date 2 — First Treatment:**
+Index date = `FIRST_TREATMENT_DATE` from Cell 5. Same eligibility rules. Patients without any recorded treatment are automatically ineligible.
+
+**Index Date 3 — Random Date:**
+Index date = randomly sampled from the window `[FIRST_DX_DATE, min(FINAL_DEATH_DATE, DATASET_END_DATE) - 5 years]`.
+
+The window is capped at `FINAL_DEATH_DATE` so the random index date never falls after the patient has already died. For alive patients the upper bound is simply `DATASET_END_DATE - 5 years`. If the window is zero or negative the patient is ineligible. Reproducible via `numpy.random.default_rng(seed=42)`.
+
+**Index Date 4 — Latest (cross-sectional):**
+Index date = `OBS_END` (last recorded clinical event). No follow-up requirement — this is a cross-sectional analysis only. Requires minimum lookback of 5 years.
+
+**Output variable:** `eligibility_df` — all disease patients with index dates, lookback/followup years, and eligibility flags for each analysis.
+
+**When to re-run:** Any time Cell 5 is re-run.
+
+---
+
+### Cell 6b — Eligibility Audit
+
+**What it does:**
+Diagnostic cell that explains why each ineligible patient fails eligibility. Run after Cell 6, before Cell 7. Does not modify any variables — read-only audit.
+
+**Ineligibility reasons per index date:**
+
+| Reason | Description |
+|---|---|
+| A | No index date recorded (e.g. no treatment in dataset) |
+| B | Insufficient lookback — < 5 years of data before index date |
+| C | Insufficient dataset coverage — < 5 years after index date |
+| D | Index date falls after death date — data quality flag |
+
+**Reason C is further split:**
+- **C1 — deceased patients**: died within the potential follow-up window. In the T2D Coherent cohort only 1 patient falls into C1 — they are correctly excluded because their index date is genuinely too close to `DATASET_END_DATE` (not because they died early).
+- **C2 — alive patients**: index date too recent for the dataset to provide 5 years of coverage.
+
+This distinction matters for your supervisor conversation: C1 patients are not excluded because they died, they are excluded because the dataset does not extend far enough after their index date. The survivorship bias fix in Cell 2 (using `DATASET_END_DATE`) already handles the general case correctly.
+
+**When to run:** Once after Cell 6, before running Cell 7. Especially important when switching to a new disease or dataset.
+
+---
+
+### Cell 7 — Final Eligible Cohort & Save
+
+**What it does:**
+Filters `eligibility_df` to patients eligible for all four index date analyses simultaneously, prints a full cohort summary, builds an exclusion log, and saves three output files.
+
+**Filtering logic:**
+
+```python
+fully_eligible = eligibility_df[
+    eligibility_df["ELIGIBLE_FIRST_DX"] &
+    eligibility_df["ELIGIBLE_FIRST_TX"] &
+    eligibility_df["ELIGIBLE_RANDOM"]   &
+    eligibility_df["ELIGIBLE_LATEST"]
+]
+```
+
+Using a single consistent cohort across all four analyses ensures any differences in results between index dates are attributable to the index date definition itself, not to differences in the underlying patient population.
+
+**Exclusion log:**
+For every excluded patient, a human-readable `EXCLUSION_REASON` string is generated explaining exactly which eligibility criterion failed and by how much. Example:
+
+```
+First Dx: lookback 3.2 < 5 yrs | No first treatment date
+```
+
+**Cohort summary printed:**
+Sex, race/ethnicity, age at diagnosis, observation period, index date ranges, mortality breakdown, cause of death, first treatment drug breakdown, follow-up available per index date.
+
+**Output files:**
+
+| File | Contents |
+|---|---|
+| `{DISEASE}_all_patients.csv` | All disease patients with eligibility flags — full picture |
+| `{DISEASE}_eligible_cohort.csv` | Fully eligible cohort — input to MOSAIC pipeline and analysis notebook |
+| `{DISEASE}_exclusion_log.csv` | One row per excluded patient with `EXCLUSION_REASON` |
+
+**When to re-run:** Any time Cell 6 is re-run.
