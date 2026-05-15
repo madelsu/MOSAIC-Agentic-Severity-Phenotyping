@@ -100,18 +100,6 @@ The MOSAIC classification system uses a multi-agent orchestration architecture d
 
 ### Phase 3 — 📊 Evaluation
 
-MOSAIC outputs are evaluated against two algorithmic clinical benchmarks and downstream outcomes.
-
-| Evaluation Layer | Description |
-|---|---|
-| Agreement | Comparison with Cooper GT and Young GT/DCSI using ordinal agreement metrics. |
-| Distributional Consistency | Bayesian comparison of severity-tier proportions across classifiers. |
-| Predictive Validity | Survival and time-to-event analyses for mortality, complications, and healthcare utilisation. |
-| Transparency | Qualitative review of key evidence, assessor reasoning, disagreements, and failure modes. |
-| Pipeline Comparison | Closed-weight and open-weight orchestrations are compared to assess inference equivalence and scalability. |
-
----
-
 ## 🧪 Four Hypotheses at a Glance
 
 | Hypothesis | Focus | Summary | Primary Output |
@@ -313,6 +301,54 @@ The adapted tier boundaries are:
 
 ---
 
+## 🧭 Pharmacoepidemiological Study Design
+
+To evaluate the predictive validity of MOSAIC severity classifications, the study uses a **longitudinal fixed-window pharmacoepidemiological design**. The key principle is that the exposure — the MOSAIC severity tier — is determined entirely from clinical information observed **before** the outcome window begins. This temporal separation is essential in observational pharmacoepidemiology, because mixing exposure assessment and outcome observation can introduce systematic bias.
+
+Because Type 2 Diabetes is a chronic and progressive disease, a single snapshot of severity may not fully capture differences in patient risk over time. MOSAIC therefore evaluates severity at multiple clinically meaningful index dates across the disease trajectory.
+
+### The 5+5 Observation Rule
+
+Each index date defines two observation windows:
+
+- **5-year lookback window:**  
+  MOSAIC uses the previous 60 months of EHR data to assign a severity tier. This includes historical laboratory values, medication history, diagnoses, complications, and clinical encounters.
+
+- **5-year follow-up window:**  
+  After the index date, patients are followed prospectively for outcomes including all-cause mortality, new diabetes-related complications, and healthcare utilisation.
+
+This structure ensures that severity is treated as a baseline exposure and that outcomes occur after the severity classification has been assigned.
+
+### Index Dates
+
+| Index Date | Anchor | Rationale |
+|---|---|---|
+| **T_Diag** | Initial Type 2 Diabetes diagnosis | Captures severity at earliest clinical recognition |
+| **T_Tx** | First pharmacological treatment | Captures severity at the point where medication becomes necessary |
+| **T₅** ★ **Primary** | Five years after first treatment | Primary validation landmark; separates early aggressive disease from slower progression and reduces immortal time bias |
+| **T₁₀** | Ten years after first treatment | Captures long-term disease trajectory and later-stage progression |
+
+### Primary Landmark: T₅
+
+The primary validation analysis is performed at **T₅**, five years after first pharmacological treatment.
+
+This landmark was chosen for two main reasons:
+
+- **Sufficient clinical history:**  
+  By T₅, patients have accumulated enough longitudinal EHR data for MOSAIC to assess disease trajectory, including treatment escalation, renal decline, glycaemic control, and complication development.
+
+- **Immortal time bias mitigation:**  
+  If patients were classified from diagnosis using information recorded several years later, patients assigned to higher severity tiers would necessarily have survived long enough to accumulate that evidence. This would create a misleading survival advantage for severe patients. By setting the landmark at T₅ and observing outcomes only after T₅, the analysis avoids counting this pre-landmark period as follow-up time.
+
+The T₅ analysis therefore estimates the association between severity and future outcomes among patients who are alive and observable at five years after treatment initiation.
+
+### Secondary Landmark Analyses
+
+Although T₅ is the primary analysis point, additional analyses are performed at **T_Diag**, **T_Tx**, and **T₁₀**. These secondary landmarks are used to assess whether the relationship between MOSAIC severity tiers and downstream outcomes remains stable across different stages of the Type 2 Diabetes disease course.
+
+Together, this design allows MOSAIC to be evaluated not only as a classification system, but as a clinically meaningful risk stratification tool for longitudinal pharmacoepidemiological research.
+
+---
 ## 📈 Evaluation and Statistical Plan
 
 The evaluation strategy combines agreement analysis, Bayesian distributional modelling, time-to-event analysis, and qualitative review of reasoning traces.
