@@ -40,7 +40,7 @@ This design allows the framework to be generated through independent evidence re
 ```text
 Phase_1_Framework_Generation/
 │
-├── Copy_of_FRAMEWORK_GENERATION_PHASE_1.ipynb
+├── FRAMEWORK_GENERATION_PHASE_1.ipynb
 │   └── Main notebook used to run the CrewAI framework-generation workflow.
 │
 ├── README.md
@@ -60,7 +60,7 @@ Phase_1_Framework_Generation/
 
 ## Main Notebook
 
-### `Copy_of_FRAMEWORK_GENERATION_PHASE_1.ipynb`
+### `FRAMEWORK_GENERATION_PHASE_1.ipynb`
 
 This notebook contains the full Phase 1 workflow.
 
