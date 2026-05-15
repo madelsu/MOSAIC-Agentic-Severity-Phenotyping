@@ -43,9 +43,9 @@ This notebook contains the **closed-weight model setup** for patient classificat
 
 It uses proprietary API-based models in a multi-agent architecture:
 
-- **Assessor 1:** GPT-4o
-- **Assessor 2:** DeepSeek
-- **Consolidator:** Claude Sonnet
+- **Assessor 1:** gpt-4o
+- **Assessor 2:** deepseek-chat
+- **Consolidator:** claude-sonnet-4-6
 
 The closed-weight setup serves as the high-performance benchmark for the MOSAIC patient classification pipeline.
 
