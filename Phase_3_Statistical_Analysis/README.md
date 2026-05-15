@@ -469,15 +469,3 @@ Phase 3 — Evaluation and Statistical Analysis
 Phase 3 takes the patient-level classifications generated in Phase 2 and evaluates whether they are valid, reproducible, and clinically meaningful.
 
 ---
-
-## Notes
-
-This README summarises the Statistical Analysis Plan for Phase 3. The full SAP is stored in:
-
-```text
-MOSAIC_SAP.docx
-```
-
-The statistical analysis plan defines the confirmatory, diagnostic, and descriptive outputs used to evaluate MOSAIC.
-
-API keys, raw patient-level files, and sensitive intermediate outputs are not included in this repository.
