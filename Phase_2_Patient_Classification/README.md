@@ -749,6 +749,52 @@ The outputs from this phase are later used in downstream evaluation against algo
 
 ---
 
+## Runtime requirements
+
+These notebooks were developed and executed in **Google Colab Pro**. Because the MOSAIC Phase 2 pipeline uses multi-agent LLM orchestration and processes full patient-level EHR records, the runtime configuration is important for reproducibility.
+
+### Closed-weight setup
+
+The closed-weight notebook:
+
+```text
+CLOSED_WEIGHT_FINAL_SET_UP.ipynb
+```
+
+should be run using a **Google Colab Pro High-RAM session**.
+
+Although the models are accessed through external APIs, the notebook still requires sufficient memory for loading patient records, storing intermediate outputs, managing CrewAI objects, and handling checkpoint files during long classification runs.
+
+Recommended runtime:
+
+```text
+Google Colab Pro — High-RAM session
+```
+
+### Open-weight setup
+
+The open-weight notebook:
+
+```text
+OPEN_WEIGHT_FINAL_SET_UP.ipynb
+```
+
+should be run using a **Google Colab Pro A100 High-RAM GPU session**.
+
+This is required because the open-weight setup runs local models through Ollama and CrewAI. The A100 High-RAM environment provides the GPU memory and system RAM needed to load and run the open-weight model ensemble used in the experiment.
+
+Recommended runtime:
+
+```text
+Google Colab Pro — A100 GPU + High-RAM session
+```
+
+### Important note
+
+Running the notebooks with lower-memory or non-GPU Colab sessions may lead to runtime crashes, incomplete model loading, failed patient batches, or very slow execution. For this reason, the runtime configurations above should be treated as part of the experimental setup.
+
+---
+
 ## Relation to the full MOSAIC pipeline
 
 ```text
