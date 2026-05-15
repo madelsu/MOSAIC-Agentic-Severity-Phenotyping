@@ -17,8 +17,7 @@ Available at: [www.idf.org/managing-type2-diabetes](https://www.idf.org/managing
 
 ### 2. Guideline Directed Management of Diabetes Comorbidities
 
-*Guideline Directed Management of Diabetes Comorbidities*. (2024). *ADA Standards of Medical Care in Diabetes - Novo Nordisk*.  
-DOI: [https://doi.org/10.1016/j.metabol.2024.155931](https://doi.org/10.1016/j.metabol.2024.155931)
+Guideline Directed Management of Diabetes Comorbidities. (2024). https://www.novonordiskmedical.com/content/dam/medical/novonordiskmedical/ta/diabetes/disease-education/resource-documents/abbreviated-version-guideline-directed-management-diabetes-comorbidities.pdf
 
 ### 3. ISPAD Clinical Practice Consensus Guidelines 2024: Type 2 Diabetes in Children and Adolescents
 
